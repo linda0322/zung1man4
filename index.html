@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Zung1 Man4</title>
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/linda0322/zung1man4/ceb8dcb548333e060b3af38e4b94140f52601fd5/image/icon/npc_favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @font-face {
+            font-family: 'Cubic11';
+            src: url('https://cdn.jsdelivr.net/gh/ACh-K/Cubic-11@90bc0e197c4db0fc8c75fe30c2d82dea03da707e/fonts/ttf/Cubic_11.ttf') format('truetype');
+            font-display: swap;
+        }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #1dc5fd;            
+            height: 100vh; width: 100vw;
+            overflow: hidden; 
+            position: fixed;
+            margin: 0;
+            overscroll-behavior: none;
+            -webkit-user-select: none;
+            touch-action: none;
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 24 24' fill='%23BAE6FF'><path d='M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2.3-1.7-4.1-3.9-4.4-.5-3.4-3.4-6.1-7-6.1-3.1 0-5.7 2-6.7 4.8C2.1 9.4 0 11.4 0 14c0 3 2.5 5.5 5.5 5.5h12z'/></svg>") 16 16, auto;
+        }
+        a, button, [role="button"], .npc-hover-animation {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24' fill='white'><path d='M17.5 19c2.5 0 4.5-2 4.5-4.5 0-2.3-1.7-4.1-3.9-4.4-.5-3.4-3.4-6.1-7-6.1-3.1 0-5.7 2-6.7 4.8C2.1 9.4 0 11.4 0 14c0 3 2.5 5.5 5.5 5.5h12z'/></svg>") 16 16, pointer !important;
+        }
+        
+        .bg-layer {
+            position: fixed; inset: 0; z-index: -1;
+            background-image: url('https://raw.githubusercontent.com/linda0322/zung1man4/refs/heads/main/image/skybg.png');
+            background-size: cover; background-position: center center; background-repeat: no-repeat;
+        }
+        @media (max-width: 600px) {.bg-layer {
+            background-image: url('https://raw.githubusercontent.com/linda0322/zung1man4/refs/heads/main/image/skybg_phone.webp');
+            background-size: 100% auto; background-position: center bottom;
+        }}
+
+        /* 禁止選取及拖動 */
+        .no-touch {
+            -webkit-touch-callout: none; /* 禁止彈出選單 */
+            -webkit-user-select: none; user-select: none; /* 禁止文字選取 */
+            -webkit-user-drag: none; user-drag: none; /* 禁止拖動元素 */
+        }
+        
+        /* 隱藏圖層 */
+        .hidden { display: none !important; }
+        /* 玻璃外框 */
+        .glass-panel {background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3);}
+        /* 字體 */
+        .font-cubic { font-family: 'Cubic11', sans-serif; }
+        .thin-border { -webkit-text-stroke: 0.5px currentColor; paint-order: stroke fill; }
+        .thick-border { -webkit-text-stroke: 1px currentColor; paint-order: stroke fill; }
+
+        /* 隱藏遊戲選單 scrollbar */
+        .grid {-webkit-overflow-scrolling: touch; overscroll-behavior: contain; -ms-overflow-style: none; scrollbar-width: none; touch-action: pan-y;}
+        .grid::-webkit-scrollbar {display: none;}
+
+        /* NPC 動畫 */
+        @keyframes float-loop {0%, 100% {transform: translateY(-2px); animation-timing-function: ease-in-out;} 50% {transform: translateY(2px); animation-timing-function: ease-in-out;}}
+        .animate-text-bounce {animation: float-loop 3s infinite;}
+        .npc-auto-bounce {animation: float-loop 3s infinite; animation-delay: -1.5s; filter: drop-shadow(0 6px 6px rgba(0,0,0,0.1)); transition: filter 1.5s ease-in-out;}
+
+        /* 手機旋轉提示 */
+        #orientation-warning {display: none; position: fixed; inset: 0; z-index: 99999; background-color: #1dc5fd; flex-direction: column; align-items: center; justify-content: center;}
+        @media screen and (max-width: 1023px) and (orientation: landscape) {#orientation-warning {display: flex !important;} body {overflow: hidden !important;}}
+        @keyframes phone-rotate-left {0% { transform: rotate(0deg); } 30% { transform: rotate(-90deg); } 70% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); }}
+        .animate-phone-rotate {animation: phone-rotate-left 2s ease-in-out infinite;}
+        
+    </style>
+</head>
+    
+<body>
+    
+    <!-- 背景圖 BACKGROUND -->
+    <div class="bg-layer"></div>
+
+    <!-- 手機旋轉提示 -->
+    <div id="orientation-warning"><div class="w-20 h-20 mb-6 animate-phone-rotate flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+    </div>
+        <h2 class="font-cubic text-xl text-white thick-border tracking-wider">請旋轉螢幕以繼續遊戲</h2>
+    </div>
+
+    <!-- 登入彈窗 LOGIN WINDOW -->
+    <div id="login-overlay" class="fixed z-[100] inset-0 bg-black/60 backdrop-blur-sm flex flex-col justify-center items-center p-6">
+        <div class="bg-white rounded-[40px] shadow-2xl flex flex-col text-center items-center w-full max-w-xs p-8">
+            <img src="https://raw.githubusercontent.com/linda0322/zung1man4/refs/heads/main/image/NPC.gif" alt="NPC" class="no-touch w-20 h-20 mb-6">
+            <h2 class="font-cubic text-slate-700 text-xl thick-border tracking-wider mb-4">登入</h2>
+            <input type="text" id="username-input" placeholder="請輸入你的名字" class="rounded-2xl border-2 border-slate-100 font-cubic thin-border text-center w-full px-4 py-4 mb-4 outline-none focus:border-[#38C0FF] transition-all">
+            <button id="confirm-user" class="bg-[#38C0FF] rounded-2xl font-cubic text-white thin-border w-full py-4 hover:bg-[#2da9e6] active:scale-95 transition-all">進入遊戲</button>
+        </div>
+    </div>
+
+    <!-- 登入錯誤彈窗 LOGIN ERROR WINDOW -->
+    <div id="login-error" class="fixed hidden z-[150] inset-0 bg-black/60 backdrop-blur-sm flex flex-col justify-center items-center p-6">
+        <div class="bg-white rounded-[40px] shadow-2xl flex flex-col text-center items-center w-full max-w-xs p-8">
+            <h1 class="text-4xl mb-4">🙏🏻</h1>
+            <h2 class="font-cubic text-slate-700 text-lg thick-border tracking-wider mb-4">請輸入名字</h2>
+            <button id="back-to-login" class="bg-[#38C0FF] rounded-2xl font-cubic text-white thin-border w-full py-4 hover:bg-[#2da9e6] active:scale-95 transition-all">返回</button>
+        </div>
+    </div>
+
+    <!-- 登出彈窗 LOGOUT WINDOW -->
+    <div id="logout-modal" class="fixed hidden z-[200] inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center p-6">
+        <div class="bg-white rounded-[40px] shadow-2xl flex flex-col text-center items-center w-full max-w-xs p-8 ">
+            <h2 class="font-cubic text-slate-700 text-xl thick-border tracking-wider mb-4">退出遊戲</h2>
+            <div class="flex gap-4 w-full">
+                <button id="cancel-logout" class="flex-1 py-3 bg-slate-200 rounded-2xl font-cubic text-slate-600 thin-border hover:bg-slate-300 transition-all">取消</button>
+                <button id="confirm-logout-final" class="flex-1 py-3 bg-[#38C0FF] rounded-2xl font-cubic text-white thin-border hover:bg-[#2da9e6] active:scale-95 transition-all">登出</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主要內容 -->
+    <main id="main-content" class="hidden container flex flex-col items-center mx-auto px-8 py-8">
+
+        <!-- 頂欄 TOP -->
+        <nav class="w-full max-w-[550px] flex justify-between mb-8">
+            <!-- 左邊群組 TOP LEFT-->
+            <div class="flex items-center gap-2">
+                <!-- 用户名稱 USERNAME -->
+                <div class="glass-panel rounded-full shadow-md flex items-center px-4 py-1.5 gap-2">
+                    <span class="font-cubic text-slate-500 text-[10px] thin-border tracking-wider">玩家</span>
+                    <span id="user-display-name" class="font-cubic text-slate-700 text-sm thin-border">載入中...</span>
+                </div>
+                <!-- 登出按鈕 LOGOUT BUTTON -->
+                <button id="logout-btn" class="glass-panel rounded-full shadow-md text-red-500 p-2 hover:bg-white/20 active:scale-95 transition-all" title="登出">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                </button>
+            </div>
+        </nav>
+
+        <!-- 歡迎動畫 WELCOME ANIMATION -->
+        <header class="flex flex-col items-center text-center mb-6">
+            <div class="relative mb-4">
+               <img src="https://raw.githubusercontent.com/linda0322/zung1man4/refs/heads/main/image/NPC.gif" alt="NPC" class="no-touch w-[140px] h-auto drop-shadow-md npc-auto-bounce">
+               <div class="absolute -top-1 -right-3 font-cubic text-white text-[22px] thick-border text-shadow-md tracking-widest animate-text-bounce">GO!</div>
+            </div>
+        </header>
+
+        <!-- 遊戲選單 GAME MENU -->
+        <div id="grid" class="w-full max-w-[600px] max-h-[60vh] grid grid-cols-2 md:grid-cols-3 gap-6 px-6 pt-6 pb-10 -mt-6 overflow-y-auto">            
+            
+            <a id="btn-island" href="island.html" class="no-touch group bg-white/95 rounded-[30px] shadow-xl p-4 aspect-square flex flex-col items-center justify-center hover:-translate-y-1 hover:bg-white/85 active:scale-95 transition-all duration-300">
+                <div class="flex-1 flex items-center justify-center w-full">
+                    <img src="https://raw.githubusercontent.com/linda0322/zung1man4/8f5887bd40d2d3b4b10391cf7819fd4b4256dea7/image/icon/island_favicon.svg" alt="我的島嶼" class="no-touch w-16 h-16 object-contain rounded-xl">
+                </div>
+                <h3 class="font-cubic text-slate-500 text-sm thin-border text-center tracking-wider mt-2">我的島嶼</h3>
+            </a>
+        
+            <a id="btn-writing" href="writing.html" class="no-touch group bg-white/95 rounded-[30px] shadow-xl p-4 aspect-square flex flex-col items-center justify-center hover:-translate-y-1 hover:bg-white/85 active:scale-95 transition-all duration-300">
+                <div class="flex-1 flex items-center justify-center w-full">
+                    <img src="https://raw.githubusercontent.com/linda0322/zung1man4/8f5887bd40d2d3b4b10391cf7819fd4b4256dea7/image/icon/writing_favicon.svg" alt="單字練習" class="no-touch w-16 h-16 object-contain rounded-xl">
+                </div>
+                <h3 class="font-cubic text-slate-500 text-sm thin-border text-center tracking-wider mt-2">單字練習</h3>
+            </a>
+        
+            <a id="btn-matching" href="matching.html" class="no-touch group bg-white/95 rounded-[30px] shadow-xl p-4 aspect-square flex flex-col items-center justify-center hover:-translate-y-1 hover:bg-white/85 active:scale-95 transition-all duration-300">
+                <div class="flex-1 flex items-center justify-center w-full">
+                    <img src="https://raw.githubusercontent.com/linda0322/zung1man4/8f5887bd40d2d3b4b10391cf7819fd4b4256dea7/image/icon/matching_favicon.svg" alt="圖文配對" class="no-touch w-16 h-16 object-contain rounded-xl">
+                </div>
+                <h3 class="font-cubic text-slate-500 text-sm thin-border text-center tracking-wider mt-2">圖文配對</h3>
+            </a>          
+        </div>
+    </main> 
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbymY386bSwBIAOn7PAvPUkzko6hMGSGghnU1lYDwjVoGe4Mngyb3vr-JpscirmLq-an/exec';
+
+        // 禁止畫面互動 TOUCH
+        /* 選取及拖動 */
+        document.querySelectorAll('.no-touch').forEach(el => { el.addEventListener('dragstart', (e) => e.preventDefault());});
+        /* 手指與鍵盤縮放 */
+        const preventZoom = (e) => { if (e.touches?.length > 1 || e.ctrlKey || e.metaKey) { if (e.cancelable) e.preventDefault();}};
+            ['touchstart', 'wheel', 'keydown', 'gesturestart'].forEach(type => { document.addEventListener(type, preventZoom, { passive: false });});
+        /* 雙擊縮放 */
+        let lastTouch = 0; document.addEventListener('touchend', (e) => { const now = Date.now(); if (now - lastTouch <= 300) e.preventDefault(); lastTouch = now;}, false);
+        /* 捲動控制 */
+        let startY = 0;
+        document.addEventListener('touchstart', (e) => { startY = e.touches[0].pageY; }, { passive: false });
+        document.addEventListener('touchmove', (e) => { const menu = document.getElementById('grid'); const path = e.composedPath();
+                                                       if (menu && path.includes(menu)) { const { scrollTop, scrollHeight, clientHeight } = menu;
+                                                                                          const deltaY = startY - e.touches[0].pageY;
+                                                                                          const isAtTop = scrollTop <= 0 && deltaY < 0;
+                                                                                          const isAtBottom = scrollTop + clientHeight >= scrollHeight && deltaY > 0;
+                                                                                          if (!isAtTop && !isAtBottom) return;
+                                                                                        }
+                                                       if (e.cancelable) e.preventDefault();},{ passive: false });
+
+        // 登入 LOGIN
+        const loginOverlay = document.getElementById('login-overlay');
+        const mainContent = document.getElementById('main-content');
+        const usernameInput = document.getElementById('username-input');
+        const confirmBtn = document.getElementById('confirm-user');
+        const userDisplayName = document.getElementById('user-display-name');
+        const loginError = document.getElementById('login-error');
+        const backBtn = document.getElementById('back-to-login');
+
+        loginError.addEventListener('click', (e) => {if (e.target === loginError) {loginError.classList.add('hidden')}});
+        backBtn.addEventListener('click', () => {loginError.classList.add('hidden')});
+                                            
+        /* 載入網頁 --> 檢查快取 --> 連接雲端 --> 執行主頁 */
+            /* 自動登入 */
+            window.addEventListener('DOMContentLoaded', () => {
+                const savedName = localStorage.getItem('studyLandUser');
+                const savedPermissions = localStorage.getItem('userPermissions');
+                if (savedName) {showMainPage(savedName, savedPermissions);}
+            });
+            /* 重新登入 */
+            confirmBtn.addEventListener('click', async () => {
+                const username = usernameInput.value.trim();
+                if (!username) {
+                    loginError.classList.remove('hidden'); confirmBtn.innerText = "進入遊戲"; return;}
+                confirmBtn.innerText = "載入中...";
+                try {const response = await fetch(SCRIPT_URL, {method: 'POST', body: JSON.stringify({ username: username })});
+                     const data = await response.json(); 
+                     const permissions = data.permissions; 
+                     localStorage.setItem('studyLandUser', username);
+                     localStorage.setItem('userPermissions', permissions);
+                     showMainPage(username, permissions);
+                } catch (error) {console.error('Error:', error);
+                     localStorage.setItem('studyLandUser', username); /** 顯示玩家名稱 **/
+                     showMainPage(username, "");} /** 顯示空白遊戲選單 **/
+            });
+        
+        // 主頁功能 MAIN PAGE FUNCTION
+        function showMainPage(name, permissions) {
+            userDisplayName.textContent = name;
+            loginOverlay.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            const allGames = {
+                'island': document.getElementById('btn-island'),
+                'writing': document.getElementById('btn-writing'),
+                'matching': document.getElementById('btn-matching'),};
+            Object.values(allGames).forEach(el => el?.classList.add('hidden')); /** 隱藏所有遊戲 **/
+            if (permissions) {const pList = permissions.split(','); 
+                pList.forEach(p => {const key = p.trim(); if (allGames[key]) {allGames[key].classList.remove('hidden');}});} /** 檢查雲端權限 **/
+            window.scrollTo(0, 0); /** 將畫面拉回左上角 **/
+         }
+
+        // 登出 LOGOUT
+        const logoutBtn = document.getElementById('logout-btn');
+        const logoutModal = document.getElementById('logout-modal');
+        const cancelLogout = document.getElementById('cancel-logout');
+        const confirmLogoutFinal = document.getElementById('confirm-logout-final');
+
+        logoutBtn.addEventListener('click', () => {logoutModal.classList.remove('hidden');});
+        cancelLogout.addEventListener('click', () => {logoutModal.classList.add('hidden');});
+        
+        confirmLogoutFinal.addEventListener('click', () => {
+            localStorage.removeItem('studyLandUser'); localStorage.removeItem('userPermissions');
+            window.location.reload();
+        });
+        
+        logoutModal.addEventListener('click', (e) => {if (e.target === logoutModal) {logoutModal.classList.add('hidden');}});
+
+        // 手機旋轉提示
+        function handleOrientationChange() {
+            const warning = document.getElementById('orientation-warning');
+            const isLandscape = window.innerWidth > window.innerHeight;
+            const isMobileOrTablet = window.innerWidth < 1024;
+            if (isLandscape && isMobileOrTablet) {warning.style.setProperty('display', 'flex', 'important');} else {warning.style.display = 'none';}
+        }
+        window.addEventListener('resize', handleOrientationChange);
+        window.addEventListener('orientationchange', handleOrientationChange);
+        handleOrientationChange();
+
+    </script>
+</body>
+</html>
